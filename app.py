@@ -94,7 +94,7 @@ CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oleo+Script:wght@700&display=swap');
 
-.stApp, .stApp p, .stApp div, .stApp label, .stApp input, .stApp button, .stApp li {
+.stApp, .stApp p, .stApp div, .stApp label, .stApp input, .stApp button, .stApp li, .stApp h4 {
   font-family: 'Inter', system-ui, sans-serif;
 }
 header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
@@ -108,7 +108,11 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
   padding: 0 0.3rem; }
 .logo-grande { font-size: 2.6rem; text-align: center; margin-top: 0.8rem; }
 .logo-chico { font-size: 1.15rem; white-space: nowrap; }
-.subtitulo { text-align: center; font-weight: 600; font-size: min(0.8rem, 2.7vw); white-space: nowrap; margin: 0.3rem 0 0; }
+.subtitulo { text-align: center; font-weight: 600; font-size: 0.78rem; line-height: 1.35; margin: 0.3rem 0 0;
+  text-wrap: balance; }
+/* Nunca desplazamiento horizontal en el celular */
+html, body, .stApp, [data-testid="stMain"], [data-testid="stAppViewContainer"] { overflow-x: hidden !important; max-width: 100vw; }
+.stApp .logo-grande { font-size: clamp(2rem, 10vw, 2.6rem); max-width: 100%; }
 .separador { border: 0 !important; border-top: 1px solid #e4e4e4 !important; margin: 0.5rem -1rem !important; }
 
 /* Barra superior: volver + logo */
@@ -192,14 +196,16 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 .st-key-series button:nth-of-type(3) { --chip: #1F8F5C; }
 
 /* Texto de "Acerca de" */
+.acerca [data-testid="stHeaderActionElements"], .acerca h4 a { display: none !important; }
 .acerca h4 { font-size: 1rem; font-weight: 700; margin: 1rem 0 0.3rem; }
 .acerca p, .acerca li { font-size: 0.9rem; line-height: 1.5; margin: 0 0 0.3rem; }
 
 /* Pie fijo al fondo de la pantalla */
 .stMainBlockContainer, .block-container { padding-bottom: 3.2rem !important; }
 .pie { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(460px, 100%);
+  box-sizing: border-box; padding-left: 1rem !important; padding-right: 6rem !important; text-align: left !important;
   background: #fff; border-top: 1px solid #e4e4e4; padding: 0.45rem 0 0.6rem; z-index: 50;
-  text-align: center; font-size: 0.68rem; color: #888; font-weight: 500; }
+  font-size: 0.68rem; color: #888; font-weight: 500; }
 
 /* Logo de la barra: vuelve al menú principal */
 .st-key-logo button { padding: 0; min-height: 0; }
@@ -718,6 +724,9 @@ Administración, Facultad de Ciencias Económicas, Universidad de Buenos Aires).
 <p>La cobertura depende de las fuentes y de los registros disponibles. Algunas películas no tienen
 serie de recaudación diaria o les faltan datos de su ficha. Las diferencias entre fuentes y los
 criterios de procesamiento pueden afectar las comparaciones.</p>
+<h4>6. Autor</h4>
+<p>Martín Nicolás Serafini, a cargo del diseño y desarrollo de la aplicación y de la recopilación y el
+procesamiento de los datos.</p>
 </div>""")
     pie()
 
