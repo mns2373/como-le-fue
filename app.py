@@ -104,11 +104,11 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 [data-testid="stVerticalBlock"] { gap: 0.7rem; }
 
 /* Marca */
-.logo { font-family: 'Oleo Script', cursive; font-weight: 700; line-height: 1.1; color: #111;
+.stApp .logo { font-family: 'Oleo Script', cursive !important; font-weight: 700 !important; line-height: 1.1; color: #111;
   padding: 0 0.3rem; }
 .logo-grande { font-size: 2.6rem; text-align: center; margin-top: 0.8rem; }
 .logo-chico { font-size: 1.15rem; white-space: nowrap; }
-.subtitulo { text-align: center; font-weight: 600; font-size: 0.7rem; white-space: nowrap; margin: 0.3rem 0 0; }
+.subtitulo { text-align: center; font-weight: 600; font-size: min(0.8rem, 2.7vw); white-space: nowrap; margin: 0.3rem 0 0; }
 .separador { border: 0 !important; border-top: 1px solid #e4e4e4 !important; margin: 0.5rem -1rem !important; }
 
 /* Barra superior: volver + logo */
@@ -124,6 +124,7 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 .stMarkdown p.anio-peli { font-size: 0.84rem; font-weight: 600; margin: 0.15rem 0 0; }
 .stMarkdown p.seccion { font-weight: 700; font-size: 0.98rem; margin: 0; line-height: 1.3; }
 .stMarkdown p.seccion-sub { font-size: 0.74rem; font-weight: 600; color: #333; margin: 0; }
+.stMarkdown p.sub-grafico { white-space: nowrap; margin-top: -1rem; }
 .stMarkdown p.etiqueta, .etiqueta { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em; margin: 0; }
 [data-testid="stWidgetLabel"] p { font-size: 0.78rem !important; font-weight: 700; }
 
@@ -456,8 +457,7 @@ def pantalla_resultados_fecha(merc):
     i = ESCALAS.index(escala)
 
     with st.container(horizontal=True, vertical_alignment="center", key="cab_fecha"):
-        md(f'<p class="seccion">Recaudación {ADJETIVO[escala]}</p>'
-           '<p class="seccion-sub">Total del mercado, en dólares históricos (sin ajuste por inflación)</p>')
+        md(f'<p class="seccion">Recaudación {ADJETIVO[escala]}</p>')
         with st.container(horizontal=True, vertical_alignment="center", key="zoom"):
             st.button("", icon=":material/zoom_out:", type="tertiary", key="zoom_menos",
                       help="Alejar: agrupar en períodos más largos", disabled=i == len(ESCALAS) - 1,
@@ -466,6 +466,7 @@ def pantalla_resultados_fecha(merc):
             st.button("", icon=":material/zoom_in:", type="tertiary", key="zoom_mas",
                       help="Acercar: agrupar en períodos más cortos", disabled=i == 0,
                       on_click=cambiar_escala, args=(-1,))
+    md('<p class="seccion-sub sub-grafico">Total del mercado en USD (sin ajuste por inflación)</p>')
 
     elegidas = st.session_state.series or []
     columnas = {"Mercado total": "total", "Top 1": "top1", "Top 10": "top10"}
@@ -627,10 +628,10 @@ def pantalla_detalle(pel, dia):
     md(f'<p class="titulo-peli">{e(f["titulo"])}</p><p class="anio-peli">{f["anio"]}</p>'
        '<hr class="separador">')
     with st.container(horizontal=True, vertical_alignment="center", key="cab_det"):
-        md('<p class="seccion">Evolución de la taquilla</p>'
-           '<p class="seccion-sub">Diaria y acumulada, en dólares históricos (sin ajuste por inflación)</p>')
+        md('<p class="seccion">Evolución de la taquilla</p>')
         st.button("", icon=":material/info:", type="tertiary", help="Más datos de la película",
                   key="btn_info", on_click=ir, args=("info",))
+    md('<p class="seccion-sub sub-grafico">Diaria y acumulada en USD (sin ajuste por inflación)</p>')
 
     serie = dia[dia["id"] == f["id"]]
     if serie.empty:
