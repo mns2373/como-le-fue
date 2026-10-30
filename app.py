@@ -99,14 +99,15 @@ CSS = """
 }
 header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 [data-testid="stDecoration"] { display: none !important; }
-.block-container { max-width: 460px; padding: 0.6rem 1rem 0.5rem; }
+.stMainBlockContainer, .block-container { max-width: 460px; padding-top: 0.6rem !important;
+  padding-left: 1rem !important; padding-right: 1rem !important; }
 [data-testid="stVerticalBlock"] { gap: 0.7rem; }
 
 /* Marca */
 .logo { font-family: 'Lobster', cursive; font-style: italic; line-height: 1; color: #111; }
 .logo-grande { font-size: 2.6rem; text-align: center; margin-top: 0.8rem; }
 .logo-chico { font-size: 1.15rem; white-space: nowrap; }
-.subtitulo { text-align: center; font-weight: 600; font-size: 0.74rem; margin: 0.3rem 0 0; }
+.subtitulo { text-align: center; font-weight: 600; font-size: 0.7rem; white-space: nowrap; margin: 0.3rem 0 0; }
 .separador { border: 0 !important; border-top: 1px solid #e4e4e4 !important; margin: 0.5rem -1rem !important; }
 
 /* Barra superior: volver + logo */
@@ -192,10 +193,10 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 .acerca h4 { font-size: 1rem; font-weight: 700; margin: 1rem 0 0.3rem; }
 .acerca p, .acerca li { font-size: 0.9rem; line-height: 1.5; margin: 0 0 0.3rem; }
 
-/* Pie siempre al fondo de la pantalla */
-.block-container > [data-testid="stVerticalBlock"] { min-height: calc(100dvh - 1.1rem); }
-[data-testid="stElementContainer"]:has(.pie) { margin-top: auto; }
-.pie { border-top: 1px solid #e4e4e4; margin: 1rem -1rem 0; padding-top: 0.5rem;
+/* Pie fijo al fondo de la pantalla */
+.stMainBlockContainer, .block-container { padding-bottom: 3.2rem !important; }
+.pie { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(460px, 100%);
+  background: #fff; border-top: 1px solid #e4e4e4; padding: 0.45rem 0 0.6rem; z-index: 50;
   text-align: center; font-size: 0.68rem; color: #888; font-weight: 500; }
 
 /* Logo de la barra: vuelve al menú principal */
@@ -374,6 +375,7 @@ def pantalla_por_fecha(merc):
 
 # ---------- Resultados por fecha ----------
 ADJETIVO = {"Días": "diaria", "Semanas": "semanal", "Meses": "mensual", "Años": "anual"}
+DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
          "septiembre", "octubre", "noviembre", "diciembre"]
 
@@ -397,6 +399,11 @@ def cambiar_escala(paso):
 def agrupar(tramo, escala):
     """Suma la recaudación por día, semana (viernes a jueves), mes o año y arma el texto del recuadro."""
     t = tramo.copy()
+    if "dia_semana" not in t:           # por si data/mercado.parquet es de una versión anterior
+        t["dia_semana"] = t["fecha"].dt.weekday.map(dict(enumerate(DIAS)))
+    if "evento" not in t:
+        t["evento"] = ""
+    t["evento"] = t["evento"].fillna("")
     if escala == "Días":
         t["x"] = t["fecha"]
         t["detalle"] = t["dia_semana"] + t["evento"].map(lambda v: f"<br>Feriado / evento: {v}" if v else "")
