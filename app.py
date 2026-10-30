@@ -92,7 +92,7 @@ ICONOS = {
 
 CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lobster&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oleo+Script:wght@700&display=swap');
 
 .stApp, .stApp p, .stApp div, .stApp label, .stApp input, .stApp button, .stApp li {
   font-family: 'Inter', system-ui, sans-serif;
@@ -104,7 +104,8 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 [data-testid="stVerticalBlock"] { gap: 0.7rem; }
 
 /* Marca */
-.logo { font-family: 'Lobster', cursive; font-style: italic; line-height: 1; color: #111; }
+.logo { font-family: 'Oleo Script', cursive; font-weight: 700; line-height: 1.1; color: #111;
+  padding: 0 0.3rem; }
 .logo-grande { font-size: 2.6rem; text-align: center; margin-top: 0.8rem; }
 .logo-chico { font-size: 1.15rem; white-space: nowrap; }
 .subtitulo { text-align: center; font-weight: 600; font-size: 0.7rem; white-space: nowrap; margin: 0.3rem 0 0; }
@@ -201,13 +202,18 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 
 /* Logo de la barra: vuelve al menú principal */
 .st-key-logo button { padding: 0; min-height: 0; }
-.st-key-logo button p { font-family: 'Lobster', cursive !important; font-size: 1.15rem !important;
-  font-style: italic; font-weight: 400 !important; color: #111; white-space: nowrap; }
+.st-key-logo { flex: 0 0 auto; margin-right: 0.35rem; }
+.st-key-logo button p { font-family: 'Oleo Script', cursive !important; font-size: 1.15rem !important;
+  font-weight: 700 !important; color: #111; white-space: nowrap; overflow: visible;
+  padding-right: 0.25rem; line-height: 1.2; }
 
 /* Encabezados con botones a la derecha (zoom, información, escoba) */
+.st-key-cab_fecha > [data-testid="stElementContainer"], .st-key-cab_det > [data-testid="stElementContainer"]:first-child {
+  flex: 1 1 auto !important; min-width: 0; }
 .st-key-cab_fecha, .st-key-cab_busq { justify-content: space-between !important;
   align-items: center !important; flex-wrap: nowrap !important; }
-.st-key-zoom { gap: 0.15rem !important; align-items: center !important; flex-wrap: nowrap !important;
+.st-key-zoom { flex: 0 0 auto !important; margin-left: auto !important; margin-right: -0.3rem;
+  gap: 0.15rem !important; align-items: center !important; flex-wrap: nowrap !important;
   width: auto !important; }
 .st-key-zoom button, .st-key-cab_busq button, .st-key-cab_det button { padding: 0 0.15rem; min-height: 0; }
 .st-key-zoom button span, .st-key-cab_busq button span { font-size: 1.45rem; }
@@ -318,7 +324,7 @@ def estilo_grafico(fig, alto, rango_dias, eje_y="Millones de USD"):
     fig.update_xaxes(tickformat=formato, hoverformat="%d/%m/%Y", showgrid=False,
                      linecolor="#999", ticks="outside", tickcolor="#999")
     fig.update_yaxes(title_text=eje_y, title_font_size=10, gridcolor="#eeeeee",
-                     zeroline=False, rangemode="tozero")
+                     zeroline=False, rangemode="tozero", exponentformat="none", separatethousands=True)
     return fig
 
 
@@ -451,7 +457,7 @@ def pantalla_resultados_fecha(merc):
 
     with st.container(horizontal=True, vertical_alignment="center", key="cab_fecha"):
         md(f'<p class="seccion">Recaudación {ADJETIVO[escala]}</p>'
-           '<p class="seccion-sub">Recaudación total del mercado</p>')
+           '<p class="seccion-sub">Total del mercado, en dólares históricos (sin ajuste por inflación)</p>')
         with st.container(horizontal=True, vertical_alignment="center", key="zoom"):
             st.button("", icon=":material/zoom_out:", type="tertiary", key="zoom_menos",
                       help="Alejar: agrupar en períodos más largos", disabled=i == len(ESCALAS) - 1,
@@ -622,7 +628,7 @@ def pantalla_detalle(pel, dia):
        '<hr class="separador">')
     with st.container(horizontal=True, vertical_alignment="center", key="cab_det"):
         md('<p class="seccion">Evolución de la taquilla</p>'
-           '<p class="seccion-sub">Recaudación diaria y acumulada</p>')
+           '<p class="seccion-sub">Diaria y acumulada, en dólares históricos (sin ajuste por inflación)</p>')
         st.button("", icon=":material/info:", type="tertiary", help="Más datos de la película",
                   key="btn_info", on_click=ir, args=("info",))
 
@@ -648,7 +654,7 @@ def pantalla_detalle(pel, dia):
             margin=dict(t=30), bargap=0.15,
             yaxis2=dict(title_text="Acumulada (millones de USD)", title_font_size=10, overlaying="y",
                         side="right", rangemode="tozero", showgrid=False, zeroline=False,
-                        tickmode="auto", nticks=5))
+                        tickmode="auto", nticks=5, exponentformat="none", separatethousands=True))
         st.plotly_chart(fig, config=CONFIG_GRAFICO, width="stretch")
 
     md('<hr class="separador"><p class="seccion">¿Cómo le fue?</p>')
