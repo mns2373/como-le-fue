@@ -6,10 +6,12 @@ Ejecutar localmente:   streamlit run app.py
 Datos: ./data/*.parquet (generados con preparar_datos.py)
 """
 import html
+import traceback
 import unicodedata
 from datetime import date
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -42,14 +44,7 @@ def cargar_datos():
     pel["generos"] = pel["generos"].map(list)
     dia = pd.read_parquet(DATA / "diaria.parquet")
     merc = pd.read_parquet(DATA / "mercado.parquet")
-    opciones = {
-        "distribuidora": sorted(pel["distribuidora"].dropna().unique(), key=str.casefold),
-        "anio": sorted(pel["anio"].unique(), reverse=True),
-        "genero": sorted({g for lista in pel["generos"] for g in lista}, key=normalizar),
-        "mpaa": [m for m in ["G", "PG", "PG-13", "R", "NC-17", "Sin calificación"]
-                 if m in set(pel["mpaa"].dropna())],
-    }
-    return pel, dia, merc, opciones
+    return pel, dia, merc
 
 
 def normalizar(texto) -> str:
@@ -111,7 +106,7 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 .logo { font-family: 'Lobster', cursive; font-style: italic; line-height: 1; color: #111; }
 .logo-grande { font-size: 2.6rem; text-align: center; margin-top: 0.8rem; }
 .logo-chico { font-size: 1.15rem; white-space: nowrap; }
-.subtitulo { text-align: center; font-weight: 600; font-size: 0.8rem; white-space: nowrap; margin: 0.3rem 0 0; }
+.subtitulo { text-align: center; font-weight: 600; font-size: 0.74rem; margin: 0.3rem 0 0; }
 .separador { border: 0 !important; border-top: 1px solid #e4e4e4 !important; margin: 0.5rem -1rem !important; }
 
 /* Barra superior: volver + logo */
@@ -197,8 +192,34 @@ header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"],
 .acerca h4 { font-size: 1rem; font-weight: 700; margin: 1rem 0 0.3rem; }
 .acerca p, .acerca li { font-size: 0.9rem; line-height: 1.5; margin: 0 0 0.3rem; }
 
-.pie { border-top: 1px solid #e4e4e4; margin: 1.5rem -1rem 0; padding-top: 0.5rem;
+/* Pie siempre al fondo de la pantalla */
+.block-container > [data-testid="stVerticalBlock"] { min-height: calc(100dvh - 1.1rem); }
+[data-testid="stElementContainer"]:has(.pie) { margin-top: auto; }
+.pie { border-top: 1px solid #e4e4e4; margin: 1rem -1rem 0; padding-top: 0.5rem;
   text-align: center; font-size: 0.68rem; color: #888; font-weight: 500; }
+
+/* Logo de la barra: vuelve al menú principal */
+.st-key-logo button { padding: 0; min-height: 0; }
+.st-key-logo button p { font-family: 'Lobster', cursive !important; font-size: 1.15rem !important;
+  font-style: italic; font-weight: 400 !important; color: #111; white-space: nowrap; }
+
+/* Encabezados con botones a la derecha (zoom, información, escoba) */
+.st-key-cab_fecha, .st-key-cab_busq { justify-content: space-between !important;
+  align-items: center !important; flex-wrap: nowrap !important; }
+.st-key-zoom { gap: 0.15rem !important; align-items: center !important; flex-wrap: nowrap !important;
+  width: auto !important; }
+.st-key-zoom button, .st-key-cab_busq button, .st-key-cab_det button { padding: 0 0.15rem; min-height: 0; }
+.st-key-zoom button span, .st-key-cab_busq button span { font-size: 1.45rem; }
+[class*="st-key-cab_"] [data-testid="stMarkdownContainer"],
+.st-key-zoom [data-testid="stMarkdownContainer"], .st-key-barra [data-testid="stMarkdownContainer"] {
+  margin-bottom: 0 !important; }
+.zoom-nivel { font-size: 0.72rem; font-weight: 600; color: #444; min-width: 3.6rem; text-align: center;
+  line-height: 1; margin-top: -6px; }
+.st-key-series { margin-top: 0.35rem; }
+
+/* Imagen del inicio */
+.st-key-imagen_inicio { align-items: center; }
+.st-key-imagen_inicio img { max-width: 230px; margin: 0 auto; display: block; }
 div[data-testid="stElementContainer"]:has(> .stHtml script):not(:has(style)) { display: none; }
 </style>
 """
@@ -211,17 +232,31 @@ def md(contenido: str):
 # =============================================================================
 # Navegación
 # =============================================================================
+TODOS = {"f_dist": "Todas las distribuidoras", "f_anio": "Todos los años",
+         "f_genero": "Todos los géneros", "f_mpaa": "Todas las calificaciones"}
+ESCALAS = ["Días", "Semanas", "Meses", "Años"]
 ESTADO_INICIAL = {
     "pantalla": "inicio", "pel_id": None, "limite": POR_PAGINA, "ultima": None,
-    "desde": None, "hasta": None, "series": list(COLORES),
-    "busqueda": "", "f_dist": None, "f_anio": None, "f_genero": None, "f_mpaa": None,
+    "desde": None, "hasta": None, "series": list(COLORES), "escala": None,
+    "busqueda": "", "error_busqueda": False, **TODOS,
 }
-PERSISTENTES = ["desde", "hasta", "series", "busqueda", "f_dist", "f_anio", "f_genero", "f_mpaa"]
+PERSISTENTES = ["desde", "hasta", "series", "busqueda", *TODOS]
+
+
+def limpiar_busqueda():
+    """Vacía la búsqueda y deja todos los filtros en Todos/as."""
+    st.session_state.busqueda = ""
+    for clave, todos in TODOS.items():
+        st.session_state[clave] = todos
+    st.session_state.limite = POR_PAGINA
+    st.session_state.error_busqueda = False
 
 
 def ir(pantalla, **extra):
     st.session_state.pantalla = pantalla
     st.session_state.update(extra)
+    if pantalla == "por_pelicula":        # cada vez que se entra, la búsqueda arranca limpia
+        limpiar_busqueda()
 
 
 def volver_arriba():
@@ -237,7 +272,8 @@ def volver_arriba():
 def barra_superior(texto, destino):
     with st.container(horizontal=True, key="barra"):
         st.button(texto, icon=":material/undo:", type="tertiary", on_click=ir, args=(destino,))
-        md('<div class="logo logo-chico">¿Cómo le fue?</div>')
+        st.button("¿Cómo le fue?", key="logo", type="tertiary", help="Ir al menú principal",
+                  on_click=ir, args=("inicio",))
     md('<hr class="separador">')
 
 
@@ -276,7 +312,7 @@ def estilo_grafico(fig, alto, rango_dias, eje_y="Millones de USD"):
         paper_bgcolor="white", plot_bgcolor="white", dragmode=False,
         hovermode="x unified", showlegend=False,
         font=dict(family="Inter, sans-serif", size=11, color="#333"),
-        hoverlabel=dict(bgcolor="white", font_size=12),
+        hoverlabel=dict(bgcolor="white", font_size=12, font_color="#222", bordercolor="#ccc"),
     )
     fig.update_xaxes(tickformat=formato, hoverformat="%d/%m/%Y", showgrid=False,
                      linecolor="#999", ticks="outside", tickcolor="#999")
@@ -305,6 +341,10 @@ def pantalla_inicio():
                        f'<div class="menu-sub">{sub}</div></div></div>',
                 titulo, ir, args=(destino,))
         st.write("")
+    imagen = Path(__file__).parent / "assets" / "claqueta.png"
+    if imagen.exists():
+        with st.container(key="imagen_inicio"):
+            st.image(str(imagen), width=230)
     pie()
 
 
@@ -328,8 +368,68 @@ def pantalla_por_fecha(merc):
     st.write("")
     st.button("Ver evolución de la taquilla", icon=":material/arrow_forward:", icon_position="right",
               type="primary", width="stretch", disabled=invertido,
-              on_click=ir, args=("resultados_fecha",))
+              on_click=ir, args=("resultados_fecha",), kwargs={"escala": None})
     pie()
+
+
+# ---------- Resultados por fecha ----------
+ADJETIVO = {"Días": "diaria", "Semanas": "semanal", "Meses": "mensual", "Años": "anual"}
+MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
+         "septiembre", "octubre", "noviembre", "diciembre"]
+
+
+def escala_sugerida(dias):
+    """Escala inicial según la extensión del período (después se cambia con la lupa)."""
+    if dias <= 183:
+        return "Días"
+    if dias <= 3 * 365:
+        return "Semanas"
+    if dias <= 10 * 365:
+        return "Meses"
+    return "Años"
+
+
+def cambiar_escala(paso):
+    i = ESCALAS.index(st.session_state.escala) + paso
+    st.session_state.escala = ESCALAS[max(0, min(i, len(ESCALAS) - 1))]
+
+
+def agrupar(tramo, escala):
+    """Suma la recaudación por día, semana (viernes a jueves), mes o año y arma el texto del recuadro."""
+    t = tramo.copy()
+    if escala == "Días":
+        t["x"] = t["fecha"]
+        t["detalle"] = t["dia_semana"] + t["evento"].map(lambda v: f"<br>Feriado / evento: {v}" if v else "")
+        return t
+    if escala == "Semanas":     # semana de taquilla: de viernes a jueves
+        t["x"] = t["fecha"] - pd.to_timedelta((t["fecha"].dt.weekday - 4) % 7, unit="D")
+    elif escala == "Meses":
+        t["x"] = t["fecha"].dt.to_period("M").dt.start_time
+    else:
+        t["x"] = t["fecha"].dt.to_period("Y").dt.start_time
+    g = t.groupby("x").agg(total=("total", "sum"), top1=("top1", "sum"), top10=("top10", "sum"),
+                           ini=("fecha", "min"), fin=("fecha", "max"), dias=("fecha", "size"),
+                           eventos=("evento", lambda v: " · ".join(dict.fromkeys(x for x in v if x))))
+    g = g.reset_index()
+
+    def texto(r):
+        if escala == "Semanas":
+            base = f"Semana del {r.ini:%d/%m} al {r.fin:%d/%m/%Y}"
+            completo = r.dias == 7
+        elif escala == "Meses":
+            base = f"{MESES[r.x.month - 1].capitalize()} de {r.x.year}"
+            completo = r.dias == r.x.days_in_month
+        else:
+            base = f"Año {r.x.year}"
+            completo = r.dias >= 365
+        if not completo:
+            base += f" (parcial, {r.dias} días)"
+        if escala == "Semanas" and r.eventos:
+            base += f"<br>Feriado / evento: {r.eventos}"
+        return base
+
+    g["detalle"] = g.apply(texto, axis=1)
+    return g
 
 
 def pantalla_resultados_fecha(merc):
@@ -337,26 +437,50 @@ def pantalla_resultados_fecha(merc):
     desde, hasta = st.session_state.desde, st.session_state.hasta
     encabezado("Resultados por fecha", f"Estados Unidos · {fecha(desde)}–{fecha(hasta)}")
     tramo = merc[(merc["fecha"] >= pd.Timestamp(desde)) & (merc["fecha"] <= pd.Timestamp(hasta))]
+    if st.session_state.escala is None:
+        st.session_state.escala = escala_sugerida((hasta - desde).days)
+    escala = st.session_state.escala
+    i = ESCALAS.index(escala)
 
-    md('<p class="seccion">Recaudación diaria</p><p class="seccion-sub">Recaudación total del mercado</p>')
+    with st.container(horizontal=True, vertical_alignment="center", key="cab_fecha"):
+        md(f'<p class="seccion">Recaudación {ADJETIVO[escala]}</p>'
+           '<p class="seccion-sub">Recaudación total del mercado</p>')
+        with st.container(horizontal=True, vertical_alignment="center", key="zoom"):
+            st.button("", icon=":material/zoom_out:", type="tertiary", key="zoom_menos",
+                      help="Alejar: agrupar en períodos más largos", disabled=i == len(ESCALAS) - 1,
+                      on_click=cambiar_escala, args=(1,))
+            md(f'<div class="zoom-nivel">{escala}</div>')
+            st.button("", icon=":material/zoom_in:", type="tertiary", key="zoom_mas",
+                      help="Acercar: agrupar en períodos más cortos", disabled=i == 0,
+                      on_click=cambiar_escala, args=(-1,))
+
     elegidas = st.session_state.series or []
     columnas = {"Mercado total": "total", "Top 1": "top1", "Top 10": "top10"}
     if not elegidas:
         st.info("Elegí al menos una serie para graficar.")
     else:
+        g = agrupar(tramo, escala)
+        traza = go.Scatter
+        modo = "lines" if len(g) > 60 else "lines+markers"
         fig = go.Figure()
+        # Traza invisible: agrega día de la semana, feriado o período debajo de la fecha del recuadro
+        fig.add_trace(go.Scatter(x=g["x"], y=[0] * len(g), yaxis="y2", mode="markers",
+                                 marker=dict(color="rgba(0,0,0,0)", size=1), customdata=g["detalle"],
+                                 hovertemplate="%{customdata}<extra></extra>", showlegend=False))
         for nombre in ["Mercado total", "Top 10", "Top 1"]:   # el total queda detrás
             if nombre not in elegidas:
                 continue
-            extra = {}
-            if nombre == "Top 1":
-                extra = dict(customdata=tramo["pelicula_1"],
+            extra = dict(hovertemplate=f"%{{y:,.1f}} M<extra>{nombre}</extra>")
+            if nombre == "Top 1" and escala == "Días":
+                extra = dict(customdata=g["pelicula_1"],
                              hovertemplate="%{y:,.1f} M · %{customdata}<extra>Top 1</extra>")
-            else:
-                extra = dict(hovertemplate=f"%{{y:,.1f}} M<extra>{nombre}</extra>")
-            fig.add_trace(go.Scattergl(x=tramo["fecha"], y=tramo[columnas[nombre]] / 1e6, name=nombre,
-                                       mode="lines", line=dict(color=COLORES[nombre], width=1.6), **extra))
+            fig.add_trace(traza(x=g["x"], y=g[columnas[nombre]] / 1e6, name=nombre, mode=modo,
+                                line=dict(color=COLORES[nombre], width=1.8),
+                                marker=dict(size=6, color=COLORES[nombre]), **extra))
         estilo_grafico(fig, 360, (hasta - desde).days)
+        formato_hover = {"Días": "%d/%m/%Y", "Semanas": "%d/%m/%Y", "Meses": "%m/%Y", "Años": "%Y"}[escala]
+        fig.update_xaxes(hoverformat=formato_hover)
+        fig.update_layout(yaxis2=dict(overlaying="y", visible=False, range=[0, 1], fixedrange=True))
         st.plotly_chart(fig, config=CONFIG_GRAFICO, width="stretch")
 
     md('<p class="seccion">Comparar recaudación</p>')
@@ -373,48 +497,102 @@ def pantalla_resultados_fecha(merc):
     pie()
 
 
-def reiniciar_limite():
-    st.session_state.limite = POR_PAGINA
+# ---------- Explorar por película ----------
+ORDEN_MPAA = ["G", "PG", "PG-13", "R", "NC-17", "Sin calificación"]
 
 
 def mas_resultados():
     st.session_state.limite += POR_PAGINA
 
 
-def pantalla_por_pelicula(pel, opciones):
+def reiniciar_limite():
+    st.session_state.limite = POR_PAGINA
+
+
+def mascara(pel, clave, valor):
+    if clave == "f_dist":
+        return pel["distribuidora"].eq(valor).to_numpy(dtype=bool)
+    if clave == "f_anio":
+        return pel["anio"].eq(int(valor)).to_numpy(dtype=bool)
+    if clave == "f_genero":
+        return pel["generos"].map(lambda gs: valor in gs).to_numpy(dtype=bool)
+    return pel["mpaa"].eq(valor).to_numpy(dtype=bool)
+
+
+def valores_disponibles(sub, clave):
+    if clave == "f_dist":
+        return sorted(sub["distribuidora"].dropna().unique(), key=normalizar)
+    if clave == "f_anio":
+        return [int(a) for a in sorted(sub["anio"].unique(), reverse=True)]
+    if clave == "f_genero":
+        return sorted({g for lista in sub["generos"] for g in lista}, key=normalizar)
+    presentes = set(sub["mpaa"].dropna())
+    return [m for m in ORDEN_MPAA if m in presentes]
+
+
+def calcular_busqueda(pel):
+    """Opciones de cada filtro según la búsqueda y los demás filtros, y películas resultantes."""
+    q = normalizar(st.session_state.busqueda)
+    base = pel["titulo_norm"].str.contains(q, regex=False).to_numpy(dtype=bool) if q else \
+        np.ones(len(pel), dtype=bool)
+    for _ in range(len(TODOS)):          # descarta selecciones que dejaron de ser posibles
+        activos = {c: st.session_state[c] for c in TODOS if st.session_state[c] != TODOS[c]}
+        masks = {c: mascara(pel, c, v) for c, v in activos.items()}
+        opciones, cambio = {}, False
+        for c in TODOS:
+            m = base.copy()
+            for otra, mk in masks.items():
+                if otra != c:
+                    m &= mk
+            opciones[c] = [TODOS[c]] + valores_disponibles(pel[m], c)
+            if st.session_state[c] not in opciones[c]:
+                st.session_state[c] = TODOS[c]
+                cambio = True
+        if not cambio:
+            break
+    final = base.copy()
+    for mk in masks.values():
+        final &= mk
+    res = pel[final].sort_values("taquilla", ascending=False)
+    return opciones, res
+
+
+def pantalla_por_pelicula(pel):
     barra_superior("Volver al inicio", "inicio")
     encabezado("Explorar por película", "Buscá una película y explorá su desempeño en taquilla")
-    st.text_input("BUSCAR PELÍCULA", key="busqueda", placeholder="Buscar por título...",
-                  icon=":material/search:", on_change=reiniciar_limite)
-    md('<p class="etiqueta">FILTROS</p>')
-    filtros = [("f_dist", "Distribuidora", "distribuidora", ":material/copyright:"),
-               ("f_anio", "Año de estreno", "anio", ":material/calendar_month:"),
-               ("f_genero", "Género", "genero", ":material/category:"),
-               ("f_mpaa", "Calificación", "mpaa", ":material/verified:")]
-    for clave, nombre, opc, _ in filtros:
-        st.selectbox(nombre, opciones[opc], key=clave, placeholder=nombre,
-                     label_visibility="collapsed", on_change=reiniciar_limite)
 
-    res = pel
-    q = normalizar(st.session_state.busqueda)
-    if q:
-        res = res[res["titulo_norm"].str.contains(q, regex=False)]
-    if st.session_state.f_dist is not None:
-        res = res[res["distribuidora"] == st.session_state.f_dist]
-    if st.session_state.f_anio is not None:
-        res = res[res["anio"] == st.session_state.f_anio]
-    if st.session_state.f_genero is not None:
-        res = res[res["generos"].map(lambda gs: st.session_state.f_genero in gs)]
-    if st.session_state.f_mpaa is not None:
-        res = res[res["mpaa"] == st.session_state.f_mpaa]
-    res = res.sort_values("taquilla", ascending=False)
+    try:
+        opciones, res = calcular_busqueda(pel)
+        error = False
+    except Exception:                   # se registra en los logs y se ofrece reiniciar
+        traceback.print_exc()
+        opciones = {c: [TODOS[c]] + valores_disponibles(pel, c) for c in TODOS}
+        for c in TODOS:
+            if st.session_state[c] not in opciones[c]:
+                st.session_state[c] = TODOS[c]
+        res, error = pel.iloc[0:0], True
+
+    with st.container(horizontal=True, vertical_alignment="center", key="cab_busq"):
+        md('<p class="etiqueta">BUSCAR PELÍCULA</p>')
+        st.button("", icon=":material/cleaning_services:", type="tertiary", key="escoba",
+                  help="Borrar búsqueda y filtros", on_click=limpiar_busqueda)
+    st.text_input("Buscar película", key="busqueda", placeholder="Buscar por título...",
+                  icon=":material/search:", on_change=reiniciar_limite, label_visibility="collapsed")
+    md('<p class="etiqueta">FILTROS</p>')
+    for clave in TODOS:
+        st.selectbox(TODOS[clave], opciones[clave], key=clave, label_visibility="collapsed",
+                     on_change=reiniciar_limite)
 
     n = len(res)
     md(f'<div class="encab-res"><p class="etiqueta">RESULTADOS</p>'
        f'<span>{num(n)} {"película" if n == 1 else "películas"} · Orden: Recaudación</span></div>')
     with st.container(height=430, key="lista"):
-        if n == 0:
-            st.caption("No se encontraron películas.")
+        if error:
+            st.error("Ocurrió un error en la búsqueda. Reiniciá la búsqueda para volver a empezar.")
+            st.button("Reiniciar búsqueda", icon=":material/restart_alt:", on_click=limpiar_busqueda,
+                      width="stretch")
+        elif n == 0:
+            st.caption("No se encontraron películas con esa combinación.")
         for _, f in res.head(st.session_state.limite).iterrows():
             contenido = (
                 f'<div class="res-tit">{e(f["titulo"])}</div>'
@@ -491,7 +669,7 @@ def pantalla_info(pel):
     ]
     md("".join(f'<div class="dato"><div class="dato-tit">{e(t)}</div><div class="dato-val">{e(v)}</div></div>'
                for t, v in datos))
-    st.link_button("Ver en Box Office Mojo", f["link"], icon=":material/open_in_new:",
+    st.link_button("Visitar Box Office Mojo", f["link"], icon=":material/arrow_forward:",
                    icon_position="right", type="primary", width="stretch")
     pie()
 
@@ -540,7 +718,7 @@ def main():
     for clave in PERSISTENTES:       # evita que Streamlit borre los valores al cambiar de pantalla
         st.session_state[clave] = st.session_state[clave]
 
-    pel, dia, merc, opciones = cargar_datos()
+    pel, dia, merc = cargar_datos()
     pantalla = st.session_state.pantalla
     if pantalla in ("detalle", "info") and st.session_state.pel_id is None:
         pantalla = st.session_state.pantalla = "por_pelicula"
@@ -552,7 +730,7 @@ def main():
         "inicio": pantalla_inicio,
         "por_fecha": lambda: pantalla_por_fecha(merc),
         "resultados_fecha": lambda: pantalla_resultados_fecha(merc),
-        "por_pelicula": lambda: pantalla_por_pelicula(pel, opciones),
+        "por_pelicula": lambda: pantalla_por_pelicula(pel),
         "detalle": lambda: pantalla_detalle(pel, dia),
         "info": lambda: pantalla_info(pel),
         "acerca": pantalla_acerca,
