@@ -201,7 +201,7 @@ html, body, .stApp, [data-testid="stMain"], [data-testid="stAppViewContainer"] {
 .acerca [data-testid="stHeaderActionElements"], .acerca h4 a { display: none !important; }
 .acerca h4 { font-size: 1rem; font-weight: 700; margin: 1rem 0 0.3rem; }
 .acerca p, .acerca li { font-size: 0.9rem; line-height: 1.5; margin: 0 0 0.3rem; }
-.acerca a.contacto { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0.6rem 0 0.4rem;
+.acerca a.contacto { display: flex; width: fit-content; align-items: center; gap: 0.5rem; margin: 0.8rem auto 0.4rem;
   padding: 0.55rem 0.9rem; border: 1px solid #e2e2e2; border-radius: 12px; color: #111 !important;
   text-decoration: none !important; font-size: 0.9rem; font-weight: 600; }
 .acerca a.contacto:hover { background: #f6f6f6; }
