@@ -353,8 +353,8 @@ def pantalla_inicio():
        '<hr class="separador">')
     st.write("")
     opciones = [
-        ("fecha", "calendario", "Explorar por fecha", "La evolución de la recaudación", "por_fecha"),
         ("peli", "pelicula", "Explorar por película", "Buscá títulos", "por_pelicula"),
+        ("fecha", "calendario", "Explorar por fecha", "La evolución de la recaudación", "por_fecha"),
         ("acerca", "info", "Acerca de este proyecto", "Investigación, fuentes y metodología", "acerca"),
     ]
     for clave, icono, titulo, sub, destino in opciones:
