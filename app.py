@@ -201,6 +201,12 @@ html, body, .stApp, [data-testid="stMain"], [data-testid="stAppViewContainer"] {
 .acerca [data-testid="stHeaderActionElements"], .acerca h4 a { display: none !important; }
 .acerca h4 { font-size: 1rem; font-weight: 700; margin: 1rem 0 0.3rem; }
 .acerca p, .acerca li { font-size: 0.9rem; line-height: 1.5; margin: 0 0 0.3rem; }
+.acerca a.contacto { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0.6rem 0 0.4rem;
+  padding: 0.55rem 0.9rem; border: 1px solid #e2e2e2; border-radius: 12px; color: #111 !important;
+  text-decoration: none !important; font-size: 0.9rem; font-weight: 600; }
+.acerca a.contacto:hover { background: #f6f6f6; }
+.acerca a.contacto svg { width: 20px; height: 20px; flex: none; }
+.acerca a.contacto svg.flecha { width: 16px; height: 16px; color: #666; }
 
 /* Pie fijo al fondo de la pantalla */
 .stMainBlockContainer, .block-container { padding-bottom: 3.2rem !important; }
@@ -742,6 +748,14 @@ criterios de procesamiento pueden afectar las comparaciones.</p>
 procesamiento de los datos. La aplicación acompaña su Proyecto Integrador sobre la reconfiguración
 del mercado del cine en Estados Unidos (Licenciatura en Administración, Facultad de Ciencias
 Económicas, Universidad de Buenos Aires).</p>
+<a class="contacto" href="https://www.linkedin.com/in/martin-nicolas-serafini-05224923b/"
+   target="_blank" rel="noopener noreferrer">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+ stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 11v5M8 8v.01M12 16v-5M12 13a2 2 0 0 1 4 0v3"/></svg>
+<span>Contactar vía LinkedIn</span>
+<svg class="flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+ stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+</a>
 </div>""")
     pie()
 
