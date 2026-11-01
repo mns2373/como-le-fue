@@ -16,6 +16,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+import grafico_descarga
+
 # =============================================================================
 # Configuración general (lo único que suele hacer falta tocar)
 # =============================================================================
@@ -223,6 +225,10 @@ html, body, .stApp, [data-testid="stMain"], [data-testid="stAppViewContainer"] {
   gap: 0.15rem !important; align-items: center !important; flex-wrap: nowrap !important;
   width: auto !important; }
 .st-key-zoom button, .st-key-cab_busq button, .st-key-cab_det button { padding: 0 0.15rem; min-height: 0; }
+.st-key-acciones_det { flex: 0 0 auto !important; width: auto !important; gap: 1.6rem !important;
+  margin-left: auto !important; margin-right: -0.3rem; transform: translateY(4px);
+  flex-wrap: nowrap !important; align-items: center !important; }
+.st-key-cab_det button span { font-size: 1.45rem; }
 .st-key-zoom button span, .st-key-cab_busq button span { font-size: 1.45rem; }
 [class*="st-key-cab_"] [data-testid="stMarkdownContainer"],
 .st-key-zoom [data-testid="stMarkdownContainer"], .st-key-barra [data-testid="stMarkdownContainer"] {
@@ -633,13 +639,21 @@ def pantalla_detalle(pel, dia):
     f = pel.loc[st.session_state.pel_id]
     md(f'<p class="titulo-peli">{e(f["titulo"])}</p><p class="anio-peli">{f["anio"]}</p>'
        '<hr class="separador">')
+    serie = dia[dia["id"] == f["id"]]
     with st.container(horizontal=True, vertical_alignment="center", key="cab_det"):
         md('<p class="seccion">Evolución de la taquilla</p>')
-        st.button("", icon=":material/info:", type="tertiary", help="Más datos de la película",
-                  key="btn_info", on_click=ir, args=("info",))
+        with st.container(horizontal=True, vertical_alignment="center", key="acciones_det"):
+            if not serie.empty:
+                fila = f.to_dict()
+                st.download_button(
+                    "", data=lambda: grafico_descarga.generar_png(fila, serie),
+                    file_name=grafico_descarga.nombre_archivo(fila), mime="image/png",
+                    icon=":material/download:", type="tertiary", key="btn_descarga",
+                    help="Descargar el gráfico como imagen (PNG 16:9)", on_click="ignore")
+            st.button("", icon=":material/info:", type="tertiary", help="Más datos de la película",
+                      key="btn_info", on_click=ir, args=("info",))
     md('<p class="seccion-sub sub-grafico">Diaria y acumulada en USD (sin ajuste por inflación)</p>')
 
-    serie = dia[dia["id"] == f["id"]]
     if serie.empty:
         st.info("Sin datos de recaudación diaria para esta película.")
     else:
