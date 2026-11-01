@@ -3,6 +3,7 @@
 Aplicación web para explorar la evolución de la taquilla cinematográfica de Estados Unidos y el desempeño comercial de sus películas, con datos diarios entre **2003 y 2025**.
 
 **Autor:** Martín Nicolás Serafini · [GitHub](https://github.com/MartinSerafini) · [LinkedIn](https://www.linkedin.com/in/martin-nicolas-serafini-05224923b/)
+
 **Fecha:** noviembre de 2026
 
 La aplicación forma parte del Proyecto Integrador de la Licenciatura en Administración (Facultad de Ciencias Económicas, Universidad de Buenos Aires), que analiza la reconfiguración del mercado del cine en Estados Unidos.
