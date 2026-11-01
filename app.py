@@ -222,6 +222,7 @@ html, body, .stApp, [data-testid="stMain"], [data-testid="stAppViewContainer"] {
 .st-key-cab_fecha, .st-key-cab_busq { justify-content: space-between !important;
   align-items: center !important; flex-wrap: nowrap !important; }
 .st-key-zoom { flex: 0 0 auto !important; margin-left: auto !important; margin-right: -0.3rem;
+  margin-top: 0.6rem !important;
   gap: 0.15rem !important; align-items: center !important; flex-wrap: nowrap !important;
   width: auto !important; }
 .st-key-zoom button, .st-key-cab_busq button, .st-key-cab_det button { padding: 0 0.15rem; min-height: 0; }
@@ -235,7 +236,7 @@ html, body, .stApp, [data-testid="stMain"], [data-testid="stAppViewContainer"] {
   margin-bottom: 0 !important; }
 .zoom-nivel { font-size: 0.72rem; font-weight: 600; color: #444; min-width: 3.6rem; text-align: center;
   line-height: 1; margin-top: -6px; }
-.st-key-series { margin-top: 0.35rem; }
+.st-key-series { margin-top: 0.75rem; }
 
 /* Imagen del inicio */
 .st-key-imagen_inicio { align-items: center; }
@@ -715,9 +716,7 @@ def pantalla_acerca():
 <div class="acerca">
 <h4>1. El proyecto</h4>
 <p>Una herramienta exploratoria para analizar la evolución de la taquilla cinematográfica
-estadounidense y el desempeño comercial de sus películas. Acompaña el Proyecto Integrador
-sobre la reconfiguración del mercado del cine en Estados Unidos (Licenciatura en
-Administración, Facultad de Ciencias Económicas, Universidad de Buenos Aires).</p>
+estadounidense y el desempeño comercial de sus películas.</p>
 <h4>2. Fuentes de datos</h4>
 <p>Box Office Mojo: recaudación diaria, rankings y atributos de las películas.</p>
 <h4>3. Cómo se construyeron los datos</h4>
@@ -740,7 +739,9 @@ serie de recaudación diaria o les faltan datos de su ficha. Las diferencias ent
 criterios de procesamiento pueden afectar las comparaciones.</p>
 <h4>6. Autor</h4>
 <p>Martín Nicolás Serafini, a cargo del diseño y desarrollo de la aplicación y de la recopilación y el
-procesamiento de los datos.</p>
+procesamiento de los datos. La aplicación acompaña su Proyecto Integrador sobre la reconfiguración
+del mercado del cine en Estados Unidos (Licenciatura en Administración, Facultad de Ciencias
+Económicas, Universidad de Buenos Aires).</p>
 </div>""")
     pie()
 

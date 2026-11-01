@@ -1,0 +1,21 @@
+Copyright (c) 2026 Martín Nicolás Serafini. Todos los derechos reservados.
+
+El código fuente, el diseño de la interfaz, los textos y el procesamiento de los datos
+de este repositorio ("¿Cómo le fue? · Taquilla del cine en Estados Unidos") son obra
+de Martín Nicolás Serafini.
+
+Se permite consultar el contenido de este repositorio y usar la aplicación publicada
+por el autor.
+
+Sin autorización previa y por escrito del autor, no se permite:
+  - copiar, modificar, redistribuir o publicar el código o el diseño, total o parcialmente;
+  - desplegar o alojar la aplicación, o versiones derivadas, en cualquier servicio;
+  - presentar este trabajo, o partes de él, como propio.
+
+Exclusiones:
+  - Los datos de taquilla provienen de Box Office Mojo y están sujetos a los términos
+    de su fuente original. Se utilizan con fines académicos.
+  - La fuente tipográfica Inter (assets/fuentes) se distribuye bajo la SIL Open Font
+    License 1.1; ver assets/fuentes/LICENCIA_Inter.txt.
+
+Contacto: https://www.linkedin.com/in/martin-nicolas-serafini-05224923b/
