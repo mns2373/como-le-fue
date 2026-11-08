@@ -1,2 +1,8 @@
+# Credenciales: nunca se suben al repositorio
+.env
+.env.*
+# Datos de origen (no se publican)
 datos_originales/
+datos_tmdb/
 __pycache__/
+.DS_Store
