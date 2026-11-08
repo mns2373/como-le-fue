@@ -6,6 +6,7 @@ Datos: ./data/*.parquet (generados con preparar_datos.py y preparar_datos_tmdb.p
 """
 import base64
 import html
+import importlib
 import traceback
 import unicodedata
 from datetime import date
@@ -18,6 +19,23 @@ import streamlit as st
 
 import grafico_descarga
 import informes
+
+
+def recargar_si_cambiaron(*modulos):
+    """Streamlit relee app.py en cada actualización, pero no los módulos auxiliares.
+    Si informes.py o grafico_descarga.py cambiaron en disco, se vuelven a cargar
+    (así no hace falta reiniciar la app en Streamlit Cloud)."""
+    for modulo in modulos:
+        try:
+            modificado = Path(modulo.__file__).stat().st_mtime
+            if getattr(modulo, "_cargado_en", None) != modificado:
+                importlib.reload(modulo)
+                modulo._cargado_en = modificado
+        except Exception:
+            traceback.print_exc()
+
+
+recargar_si_cambiaron(informes, grafico_descarga)
 
 # =============================================================================
 # Configuración general (lo único que suele hacer falta tocar)
