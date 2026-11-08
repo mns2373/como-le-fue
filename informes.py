@@ -596,28 +596,30 @@ def resumen_trayectoria(bio_id, pel, fichas, cred, per):
     h.espaciado(X, y, "Filmografía en la app")
     y += 22
     cols = [("Año", 44, "l", False), ("Película", 246, "l", True), ("Rol", 190, "l", False),
-            ("Taquilla EE.\nUU.", 85, "r", False), ("Ranking\nanual", 70, "r", False),
+            ("Taquilla\nEE. UU.", 85, "r", False), ("Ranking\nanual", 70, "r", False),
             ("Crítica", 50, "r", False), ("IMDb", 45, "r", False)]
-    def filas_de(t):
-        return [(str(r.anio), r.titulo, r.rol, m(r.taquilla) if not vacio(r.taquilla) else SIN,
-                 "" if vacio(r.ranking) else f"N.º {int(r.ranking)}", "" if vacio(r.critica) else str(int(r.critica)),
-                 "" if vacio(r.publico) else n(r.publico, 1)) for r in t.itertuples()]
-    # Si no entran todas, se eligen las más taquilleras que entran y se ordenan por año
-    k = len(film)
-    while k > 0:
-        tabla = film if k == len(film) else film.loc[film["taquilla"].fillna(0).nlargest(k).index].sort_values(["anio", "titulo"])
-        _, entran = h.tabla(X, y, cols, filas_de(tabla), 1620, tam=13, alto_fila=26, dibujar=False)
-        if entran == k:
-            break
-        k = min(k - 1, entran)
-    filas_t = filas_de(tabla) if k > 0 else []
+    # Por orden de taquilla (las películas sin dato de recaudación, al final)
+    tabla = film.assign(_t=film["taquilla"].fillna(-1)).sort_values(["_t", "anio"], ascending=[False, True])
+    filas_t = [(str(r.anio), r.titulo, r.rol, m(r.taquilla) if not vacio(r.taquilla) else SIN,
+                "" if vacio(r.ranking) else f"N.º {int(r.ranking)}", "" if vacio(r.critica) else str(int(r.critica)),
+                "" if vacio(r.publico) else n(r.publico, 1)) for r in tabla.itertuples()]
+    LIMITE = 1620
     if not filas_t:
         h.texto(X, y + 8, SIN, 14, False, GRIS_CLARO)
     else:
-        y_fin, hechas = h.tabla(X, y, cols, filas_t, 1620, tam=13, alto_fila=26)
-        nota = "En orden cronológico. No se incluyen los reestrenos. Ranking anual mundial; crítica según Metascore (0 a 100)."
-        if hechas < len(film):
-            nota += f" Se muestran {hechas} de {len(film)} películas (las más taquilleras)."
+        _, entran = h.tabla(X, y, cols, filas_t, LIMITE, tam=13, alto_fila=26, dibujar=False)
+        if entran < len(filas_t):
+            # El último lugar disponible se reemplaza por la leyenda con las películas restantes
+            mostradas = max(entran - 1, 0)
+            y_fin, _ = h.tabla(X, y, cols, filas_t[:mostradas], LIMITE, tam=13, alto_fila=26)
+            resto = len(filas_t) - mostradas
+            h.texto(X + 6, y_fin + 8, f"y {resto} {'película' if resto == 1 else 'películas'} más.", 13, False, GRIS)
+            y_fin += 26
+            h.linea(X, y_fin, X + sum(c[1] for c in cols), y_fin, "#EEEEEE")
+        else:
+            y_fin, _ = h.tabla(X, y, cols, filas_t, LIMITE, tam=13, alto_fila=26)
+        nota = ("Por orden de taquilla. No se incluyen los reestrenos. Ranking anual mundial; "
+                "crítica según Metascore (0 a 100).")
         h.parrafo(X, y_fin + 8, nota, 11.5, W, 15, color=GRIS, max_lineas=2)
 
     h.pie("Box Office Mojo (recaudación, ranking y salas), IMDb (puntajes y elenco) y TMDB (foto, biografía y datos "

@@ -24,8 +24,8 @@ import informes
 # =============================================================================
 AUTOR = "Martín Nicolás Serafini"
 # Versión para la defensa: False (sin enlaces personales). Versión para publicar: True.
-MOSTRAR_CONTACTO = False
-LINKEDIN = ""  # completar para la versión de publicación
+MOSTRAR_CONTACTO = True
+LINKEDIN = "https://www.linkedin.com/in/martin-nicolas-serafini-05224923b/"
 SUBTITULO = "Taquilla del cine en Estados Unidos · 2003–2025"
 POR_PAGINA = 20                      # resultados que se suman con "Mostrar más"
 COLOR_DIARIA = "#2F80D0"
@@ -384,6 +384,7 @@ a.afiche { cursor: zoom-in; }
 div[data-testid="stElementContainer"]:has(> .stHtml script):not(:has(style)) { display: none; }
 
 /* Ajustes sobre los estilos propios de Streamlit */
+.stApp p.etiqueta.campo { margin-bottom: .45rem; }
 .stApp p.texto { font-size: .9rem; line-height: 1.5; margin: 0; }
 .stApp p.nota { font-size: .72rem; color: #666; margin: .35rem 0 0; line-height: 1.4; }
 .stApp p.sub { font-size: .78rem; font-weight: 600; color: #333; margin: .8rem 0 0; }
@@ -997,13 +998,22 @@ def roles_resumidos(roles):
     return " · ".join(partes) or SIN
 
 
+@st.cache_data(show_spinner=False)
+def peliculas_por_rol():
+    """Cantidad de películas de cada persona en cada rol (sin reestrenos)."""
+    pel, _, _, _, _, cred, _ = cargar_datos()
+    reestrenos = set(pel.loc[pel["titulo"].str.contains(informes.REESTRENO, na=False), "id"])
+    c = cred[~cred["id"].isin(reestrenos)]
+    return c.groupby(["bio_id", "rol"])["id"].nunique().unstack(fill_value=0)
+
+
 def pantalla_por_persona(per):
     barra_superior()
     encabezado("Explorar por persona", "Buscá actores, directores y equipo técnico")
-    md('<p class="etiqueta">BUSCAR PERSONA</p>')
+    md('<div style="height:.5rem"></div><p class="etiqueta campo">BUSCAR PERSONA</p>')
     st.text_input("Buscar persona", key="busca_persona", placeholder="Buscar por nombre...",
                   icon=":material/search:", label_visibility="collapsed", on_change=reiniciar, args=("limite_pr",))
-    md('<p class="etiqueta">FILTROS</p>')
+    md('<div style="height:.3rem"></div><p class="etiqueta campo">FILTROS</p>')
     st.selectbox("Rol", [TODOS_ROLES] + ROLES, key="rol_persona", label_visibility="collapsed",
                  on_change=reiniciar, args=("limite_pr",))
     try:
@@ -1011,8 +1021,13 @@ def pantalla_por_persona(per):
         q = normalizar(st.session_state.busca_persona)
         if q:
             b = b[b["nombre_norm"].str.contains(q, regex=False, na=False)]
-        if st.session_state.rol_persona != TODOS_ROLES:
-            b = b[b["roles"].fillna("").str.split("|").map(lambda r: st.session_state.rol_persona in r)]
+        rol = st.session_state.rol_persona
+        if rol != TODOS_ROLES:
+            # Con un rol elegido, se cuentan y ordenan solo las películas en ese rol
+            por_rol = peliculas_por_rol()
+            cuenta = por_rol[rol] if rol in por_rol.columns else pd.Series(dtype=int)
+            b = b.assign(n_peliculas=b["bio_id"].map(cuenta).fillna(0).astype(int))
+            b = b[b["n_peliculas"] > 0].sort_values(["n_peliculas", "popularidad"], ascending=False)
     except Exception:
         traceback.print_exc()
         b = per.iloc[0:0]
@@ -1024,9 +1039,12 @@ def pantalla_por_persona(per):
         for r in b.head(st.session_state.limite_pr).itertuples():
             foto = f'<img src="{e(r.foto)}" alt="" loading="lazy">' if not vacio(getattr(r, "foto", None)) else SVG_PERSONA
             n = int(r.n_peliculas)
+            cantidad = f'{n} {"película" if n == 1 else "películas"}'
+            cantidad = f"{cantidad} en la app" if st.session_state.rol_persona == TODOS_ROLES else \
+                f"{st.session_state.rol_persona}: {cantidad}"
             contenido = (f'<div class="pr-card"><div class="pr-foto">{foto}</div><div>'
                          f'<div class="res-tit">{e(r.nombre)}</div><div class="res-linea">{e(roles_resumidos(r.roles))}</div>'
-                         f'<div class="res-linea">{n} {"película" if n == 1 else "películas"} en la app</div></div></div>')
+                         f'<div class="res-linea">{e(cantidad)}</div></div></div>')
             tarjeta(f"pr{r.bio_id}", contenido, r.nombre, ir, args=("persona",), kwargs={"bio_id": r.bio_id})
         if len(b) > st.session_state.limite_pr:
             st.button(f"Mostrar más ({num(len(b) - st.session_state.limite_pr)} restantes)",
