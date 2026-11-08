@@ -13,9 +13,10 @@ Sin autorización previa y por escrito del autor, no se permite:
   - presentar este trabajo, o partes de él, como propio.
 
 Exclusiones:
-  - Los datos de taquilla provienen de Box Office Mojo y están sujetos a los términos
-    de su fuente original. Se utilizan con fines académicos.
-  - La fuente tipográfica Inter (assets/fuentes) se distribuye bajo la SIL Open Font
-    License 1.1; ver assets/fuentes/LICENCIA_Inter.txt.
-
-Contacto: https://www.linkedin.com/in/martin-nicolas-serafini-05224923b/
+  - Los datos provienen de Box Office Mojo (IMDbPro), IMDb y TMDB (The Movie Database)
+    y están sujetos a los términos de sus fuentes originales.
+    This product uses the TMDB API but is not endorsed or certified by TMDB.
+    Information courtesy of IMDb (https://www.imdb.com). Used with permission.
+  - Las fuentes tipográficas Inter y Oleo Script (assets/fuentes) se distribuyen bajo la
+    SIL Open Font License 1.1; ver assets/fuentes/LICENCIA_Inter.txt y
+    assets/fuentes/LICENCIA_OleoScript.txt.

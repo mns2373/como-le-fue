@@ -138,6 +138,31 @@ def preparar_diaria(pel):
     return dia
 
 
+DIAS_ES = {"Monday": "Lunes", "Tuesday": "Martes", "Wednesday": "Miércoles", "Thursday": "Jueves",
+           "Friday": "Viernes", "Saturday": "Sábado", "Sunday": "Domingo"}
+EVENTOS_ES = {
+    "New Year's Eve": "Fin de año", "New Year's Day": "Año Nuevo", "MLK Day": "Día de Martin Luther King",
+    "Presidents' Day": "Día de los Presidentes", "Easter Sunday": "Domingo de Pascua",
+    "Memorial Day": "Día de los Caídos", "Independence Day": "Día de la Independencia",
+    "Labor Day": "Día del Trabajo", "Indig. Peoples' Day": "Día de los Pueblos Indígenas",
+    "Halloween": "Halloween", "Thanksgiving": "Día de Acción de Gracias",
+    "COVID-19 Pandemic": "Pandemia de COVID-19", "World Cup": "Mundial de fútbol",
+    "Olympics": "Juegos Olímpicos", "Hurricane": "Huracán",
+    "Mayweather/Pacquiao Fight": "Pelea Mayweather-Pacquiao",
+}
+
+
+def eventos_del_dia(fila):
+    """Feriados o eventos del día (se descartan Normal y Weekend)."""
+    vistos = []
+    for v in (fila["event_primary"], fila["event_secondary"]):
+        if pd.notna(v) and v not in ("Normal", "Weekend"):
+            v = EVENTOS_ES.get(v, v)
+            if v not in vistos:
+                vistos.append(v)
+    return " · ".join(vistos)
+
+
 def preparar_mercado():
     t = pd.read_csv(ENTRADA / "df_rec_dia_total_app.csv")
     t["fecha"] = pd.to_datetime(t["date_normalized"])
@@ -149,6 +174,8 @@ def preparar_mercado():
         "top10": t["top_10_gross"],
         "pelicula_1": t["#1_release"],
         "en_cartel": t["releases"],
+        "dia_semana": t["day"].map(DIAS_ES).fillna(t["day"]),
+        "evento": t.apply(eventos_del_dia, axis=1),
     }).reset_index(drop=True)
     print(f"Mercado: {len(merc):,} días, del {merc['fecha'].min():%d/%m/%Y} "
           f"al {merc['fecha'].max():%d/%m/%Y}")
