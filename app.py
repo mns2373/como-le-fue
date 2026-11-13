@@ -1,5 +1,5 @@
 """
-¿Cómo le fue? · Taquilla del cine en Estados Unidos (2003–2025)  ·  versión 2
+¿Cómo le fue? · Taquilla del cine en Estados Unidos (2003–2025)  ·  versión 2.1
 
 Ejecutar localmente:   streamlit run app.py
 Datos: ./data/*.parquet (generados con preparar_datos.py y preparar_datos_tmdb.py)
@@ -42,8 +42,8 @@ recargar_si_cambiaron(informes, grafico_descarga)
 # =============================================================================
 AUTOR = "Martín Nicolás Serafini"
 # Versión para la defensa: False (sin enlaces personales). Versión para publicar: True.
-MOSTRAR_CONTACTO = True
-LINKEDIN = "https://www.linkedin.com/in/martin-nicolas-serafini-05224923b/"
+MOSTRAR_CONTACTO = False
+LINKEDIN = ""  # completar para la versión de publicación
 SUBTITULO = "Taquilla del cine en Estados Unidos · 2003–2025"
 POR_PAGINA = 20                      # resultados que se suman con "Mostrar más"
 COLOR_DIARIA = "#2F80D0"
@@ -413,6 +413,52 @@ div[data-testid="stElementContainer"]:has(> .stHtml script):not(:has(style)) { d
 [class*="st-key-fila_"] p { margin: 0 !important; line-height: 1.3; }
 [class*="st-key-fila_"] { align-items: center !important; min-height: 2.2rem; }
 [class*="st-key-fila_"] [data-testid="stElementContainer"] { display: flex; align-items: center; }
+/* ===== V2.1: color de acento, jerarquía y barra inferior ===== */
+.menu svg { color: #1E5AA8; background: #EAF1FA; border-radius: 12px; padding: 8px; width: 54px !important; height: 54px !important; }
+.stApp .logo-grande { color: #0F2E57; }
+.stMarkdown p.titulo-pantalla { color: #0F2E57; }
+.stApp .etiqueta, .stMarkdown p.etiqueta { color: #1E5AA8; }
+.sec, .stMarkdown p.seccion { color: #0F2E57; }
+.sec { font-size: 1.08rem; }
+.sec::before { content: ""; width: 4px; height: 1.05em; background: #1E5AA8; border-radius: 2px; display: inline-block; }
+.rk-pos { background: #1E5AA8; }
+.res-taq b { color: #1E5AA8; }
+.res-tit { color: #0F2E57; }
+.links a { background: #1E5AA8; } .links a:hover { background: #0F2E57; }
+.cuenta { background: #EAF1FA; color: #1E5AA8; }
+.st-key-lista { border-color: #EAF1FA; background: #FBFCFE; }
+.tarjeta { border-color: #E3E7EE; }
+.kpi-val, .dato-val { color: #0F2E57; }
+.st-key-barra button p { color: #0F2E57; }
+.st-key-saga button:disabled { background: #1E5AA8; border-color: #1E5AA8; }
+.destacado { border-left-color: #1E5AA8; background: #EAF1FA; }
+.st-key-filmo button p, .st-key-equipo button p, .st-key-elenco button p { color: #1E5AA8; text-decoration-color: #1E5AA8; }
+.stButton button[kind="primary"] { background: #1E5AA8; border-color: #1E5AA8; }
+.stButton button[kind="primary"]:hover { background: #0F2E57; border-color: #0F2E57; }
+/* Jerarquía: el dato principal de la pantalla resalta */
+.cab-kpis .kpi:first-child, .kpis .kpi:first-child { background: #1E5AA8; border-color: #1E5AA8; }
+.cab-kpis .kpi:first-child *, .kpis .kpi:first-child * { color: #fff !important; }
+.cab-kpis .kpi:first-child .kpi-val, .kpis .kpi:first-child .kpi-val { font-size: 1.6rem; }
+.stMarkdown p.titulo-peli { font-size: 1.6rem; color: #0F2E57; }
+/* Pie centrado y firma de Acerca de */
+.stApp .pie { text-align: center !important; padding-left: 1rem !important; padding-right: 1rem !important; }
+.stApp p.firma { margin: 0; text-align: center; font-size: .68rem !important; color: #888 !important; font-weight: 500; }
+/* Barra de navegación inferior */
+.stMainBlockContainer:has(.st-key-nav_inf), .block-container:has(.st-key-nav_inf) { padding-bottom: 5.4rem !important; }
+.st-key-nav_inf { position: fixed !important; bottom: 0; left: 50%; transform: translateX(-50%); width: min(460px, 100%) !important;
+  z-index: 60; background: #fff; border-top: 1px solid #E3E7EE; box-shadow: 0 -4px 14px rgba(0,0,0,.05);
+  padding: .35rem .2rem calc(.45rem + env(safe-area-inset-bottom)); gap: 0 !important; flex-wrap: nowrap !important; }
+.st-key-nav_inf > div { flex: 1 1 0 !important; min-width: 0; width: auto !important; }
+.st-key-nav_inf button { flex-direction: column !important; gap: .1rem !important; padding: .1rem 0 !important; min-height: 0 !important;
+  color: #8a8f98 !important; width: 100%; }
+.st-key-nav_inf button > div, .st-key-nav_inf button > div > span { display: flex !important; flex-direction: column !important;
+  gap: .1rem !important; align-items: center !important; justify-content: center; }
+.st-key-nav_inf button > div > span > span:first-child { margin: 0 !important; }
+.st-key-nav_inf button p { font-size: .66rem !important; font-weight: 600; color: inherit !important; margin: 0; }
+.st-key-nav_inf button span[data-testid="stIconMaterial"] { font-size: 1.45rem !important; color: inherit !important;
+  padding: 2px 14px; border-radius: 12px; }
+.st-key-nav_inf [class*="_on"] button { color: #1E5AA8 !important; }
+.st-key-nav_inf [class*="_on"] button span[data-testid="stIconMaterial"] { background: #EAF1FA; }
 </style>
 """
 
@@ -491,11 +537,15 @@ def volver_arriba():
                 unsafe_allow_javascript=True)
 
 
+SECCIONES = ("por_pelicula", "por_persona", "por_fecha", "acerca")
+
+
 def barra_superior():
+    """Volver (solo dentro de un detalle) y logo. En las secciones principales navega la barra inferior."""
     ss = st.session_state
-    anterior = ss.historia[-1]["pantalla"] if ss.historia else "inicio"
     with st.container(horizontal=True, key="barra"):
-        st.button(VOLVER.get(anterior, "Volver"), icon=":material/undo:", type="tertiary", on_click=volver)
+        if ss.pantalla not in SECCIONES:
+            st.button("Volver", icon=":material/arrow_back:", type="tertiary", on_click=volver)
         st.button("¿Cómo le fue?", key="logo", type="tertiary", help="Ir al menú principal",
                   on_click=ir, args=("inicio",))
     md('<hr class="separador">')
@@ -505,8 +555,31 @@ def encabezado(titulo, bajada):
     md(f'<p class="titulo-pantalla">{e(titulo)}</p><p class="bajada">{e(bajada)}</p><hr class="separador">')
 
 
+NAV = [("inicio", ":material/home:", "Inicio", ("inicio",)),
+       ("por_pelicula", ":material/movie:", "Películas", ("por_pelicula", "detalle", "info")),
+       ("por_persona", ":material/group:", "Personas", ("por_persona", "persona")),
+       ("por_fecha", ":material/calendar_month:", "Fechas", ("por_fecha",)),
+       ("acerca", ":material/info:", "Acerca", ("acerca",))]
+
+
+def ir_seccion(destino):
+    if st.session_state.pantalla != destino:
+        ir(destino)
+
+
 def pie():
-    md(f'<div class="pie">Desarrollado por {e(AUTOR)}</div>')
+    """Inicio: pie fijo con la firma. Resto: barra de navegación inferior (y la firma al final de Acerca de)."""
+    ss = st.session_state
+    if ss.pantalla == "inicio":
+        md(f'<div class="pie">Desarrollado por {e(AUTOR)}</div>')
+        return
+    if ss.pantalla == "acerca":
+        md(f'<hr class="separador" style="margin-top:.9rem !important"><p class="firma">Desarrollado por {e(AUTOR)}</p>')
+    with st.container(horizontal=True, key="nav_inf"):
+        for destino, icono, texto, pantallas in NAV:
+            activo = "_on" if ss.pantalla in pantallas else ""
+            st.button(texto, icon=icono, type="tertiary", key=f"nav_{destino}{activo}",
+                      on_click=ir_seccion, args=(destino,), width="stretch")
 
 
 def tarjeta(clave, contenido_html, etiqueta, on_click, args=(), kwargs=None):

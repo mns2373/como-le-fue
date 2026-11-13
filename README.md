@@ -2,8 +2,8 @@
 
 Aplicación web para explorar el desempeño comercial de las películas estrenadas en Estados Unidos entre **2003 y 2025**, y la trayectoria de las personas que las hicieron.
 
-**Autor:** Martín Nicolás Serafini · [GitHub](https://github.com/MartinSerafini) · [LinkedIn](https://www.linkedin.com/in/martin-nicolas-serafini-05224923b/)
-**Versión:** 2 · noviembre de 2026
+**Autor:** Martín Nicolás Serafini
+**Versión:** 2.1 · noviembre de 2026
 
 La aplicación nació como parte del Proyecto Integrador de la Licenciatura en Administración (Facultad de Ciencias Económicas, Universidad de Buenos Aires), que analiza la reconfiguración del mercado del cine en Estados Unidos.
 
@@ -83,6 +83,6 @@ Datos de taquilla: Box Office Mojo by IMDbPro (https://www.boxofficemojo.com).
 
 © 2026 Martín Nicolás Serafini. Todos los derechos reservados.
 
-El código, el diseño y el procesamiento de los datos son obra del autor. Se puede consultar el repositorio y usar libremente la aplicación publicada. No se permite copiar, redistribuir, publicar ni presentar este trabajo, total o parcialmente, como propio sin autorización escrita del autor. Para cualquier otro uso, se puede contactar al autor por [LinkedIn](https://www.linkedin.com/in/martin-nicolas-serafini-05224923b/).
+El código, el diseño y el procesamiento de los datos son obra del autor. Se puede consultar el repositorio y usar libremente la aplicación publicada. No se permite copiar, redistribuir, publicar ni presentar este trabajo, total o parcialmente, como propio sin autorización escrita del autor. Cualquier otro uso requiere autorización del autor.
 
 Los datos pertenecen a sus fuentes originales (Box Office Mojo, IMDb y TMDB) y están sujetos a sus términos. Las fuentes Inter y Oleo Script se distribuyen bajo sus propias licencias.
